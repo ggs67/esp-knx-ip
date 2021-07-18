@@ -304,7 +304,7 @@ void ESPKNXIP::__handle_register()
     __callback_register_assignment(ga, cb);
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 
@@ -328,7 +328,7 @@ void ESPKNXIP::__handle_delete()
     __callback_delete_assignment(id);
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 
@@ -359,7 +359,7 @@ void ESPKNXIP::__handle_set()
     physaddr.bytes.low = member;
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 
@@ -431,7 +431,7 @@ void ESPKNXIP::__handle_config()
     }
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 
@@ -467,7 +467,7 @@ DEBUG_PRINTLN(F("Feedback called"));
     }
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 
@@ -477,7 +477,7 @@ void ESPKNXIP::__handle_restore()
   DEBUG_PRINTLN(F("Restore called"));
   memcpy(custom_config_data, custom_config_default_data, MAX_CONFIG_SPACE);
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 #endif
@@ -486,7 +486,7 @@ end:
 void ESPKNXIP::__handle_reboot()
 {
   DEBUG_PRINTLN(F("Rebooting!"));
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
   delay(1000);
   ESP.restart();
@@ -518,7 +518,7 @@ void ESPKNXIP::__handle_eeprom()
     }
   }
 end:
-  server->sendHeader(F("Location"),F(__ROOT_PATH));
+  server->sendHeader(F("Location"),F_KNX_WEB_PATH(__ROOT_PATH));
   server->send(302);
 }
 #endif

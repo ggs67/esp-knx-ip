@@ -27,55 +27,58 @@ void ESPKNXIP::load()
   restore_from_eeprom();
 }
 
-void ESPKNXIP::start(ESP8266WebServer *srv)
+// GGS67: added withPrefix paramweter to allow config free prefix decision from user code
+void ESPKNXIP::start(ESP8266WebServer *srv, bool withPrefix)
 {
   server = srv;
-  __start();
+  __start(withPrefix);
 }
 
-void ESPKNXIP::start()
+void ESPKNXIP::start(bool withPrefix)
 {
   server = new ESP8266WebServer(80);
-  __start();
+  __start(withPrefix);
 }
 
-void ESPKNXIP::__start()
+void ESPKNXIP::__start(bool withPrefix)
 {
+	__withPrefix = withPrefix;
   if (server != nullptr)
   {
-    server->on(ROOT_PREFIX, [this](){
+    if(withPrefix) server->on(ROOT_PREFIX, [this](){
       __handle_root();
     });
-    server->on(__ROOT_PATH, [this](){
+    
+    server->on(KNX_WEB_PATH(__ROOT_PATH), [this](){
       __handle_root();
     });
-    server->on(__REGISTER_PATH, [this](){
+    server->on(KNX_WEB_PATH(__REGISTER_PATH), [this](){
       __handle_register();
     });
-    server->on(__DELETE_PATH, [this](){
+    server->on(KNX_WEB_PATH(__DELETE_PATH), [this](){
       __handle_delete();
     });
-    server->on(__PHYS_PATH, [this](){
+    server->on(KNX_WEB_PATH(__PHYS_PATH), [this](){
       __handle_set();
     });
 #if !DISABLE_EEPROM_BUTTONS
-    server->on(__EEPROM_PATH, [this](){
+    server->on(KNX_WEB_PATH(__EEPROM_PATH), [this](){
       __handle_eeprom();
     });
 #endif
-    server->on(__CONFIG_PATH, [this](){
+    server->on(KNX_WEB_PATH(__CONFIG_PATH), [this](){
       __handle_config();
     });
-    server->on(__FEEDBACK_PATH, [this](){
+    server->on(KNX_WEB_PATH(__FEEDBACK_PATH), [this](){
       __handle_feedback();
     });
 #if !DISABLE_RESTORE_BUTTON
-    server->on(__RESTORE_PATH, [this](){
+    server->on(KNX_WEB_PATH(__RESTORE_PATH), [this](){
       __handle_restore();
     });
 #endif
 #if !DISABLE_REBOOT_BUTTON
-    server->on(__REBOOT_PATH, [this](){
+    server->on(KNX_WEB_PATH(__REBOOT_PATH), [this](){
       __handle_reboot();
     });
 #endif

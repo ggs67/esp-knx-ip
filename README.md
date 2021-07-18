@@ -96,3 +96,17 @@ Simply visit the IP of your ESP with a webbrowser. You can configure the followi
 * Which group address are to be used by the program (e.g. for status replies)
 
 The configuration is dynamically generated from the code.
+
+## Cahnge log GGS67
+
+- Set dummy aray length of 1 to additional_info[] in data union of __cemi_msg because th enew compiler does not allow
+  for flexible arrays in unions
+- Made ROOT_PREFIX for web server permanent which allows /knx prefix to be used with common web server without having to
+  edit the library
+- Added withPrefix argument to start() methid, defauletd to false so that it is compatible with previous use
+  withouzt overriding ROOT_PREFIX. Set withPrefix to true to use the prefix
+- Introduced KNX_WEB_PATH macro to automatically select the literal string path with or without prefix at runtime
+- Introducef F_KNX_WEB_PATH to accomodate the F(s) which is used for strings that should be stored in program space (flash) rather than
+  loaded into RAM at program start. Note that in this library WString.h is used which actually loads the string into memory, but
+  still there will be only one copy instead of 2
+  

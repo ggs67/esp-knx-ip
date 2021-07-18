@@ -26,7 +26,7 @@
 
 // Webserver related
 #define USE_BOOTSTRAP             1 // [Default 1] Set to 1 to enable use of bootstrap CSS for nicer webconfig. CSS is loaded from bootstrapcdn.com. Set to 0 to disable
-#define ROOT_PREFIX               ""  // [Default ""] This gets prepended to all webserver paths, default is empty string "". Set this to "/knx" if you want the config to be available on http://<ip>/knx
+#define ROOT_PREFIX               "/knx"  // (GGS) [Default ""] This gets prepended to all webserver paths, default is empty string "". Set this to "/knx" if you want the config to be available on http://<ip>/knx
 #define DISABLE_EEPROM_BUTTONS    0 // [Default 0] Set to 1 to disable the EEPROM buttons in the web ui.
 #define DISABLE_REBOOT_BUTTON     0 // [Default 0] Set to 1 to disable the reboot button in the web ui.
 #define DISABLE_RESTORE_BUTTON    0 // [Default 0] Set to 1 to disable the "restore defaults" button in the web ui.
@@ -70,6 +70,7 @@
   #define DEBUG_PRINTLN(...) {}
 #endif
 
+#define ROOT_PREFIX_LENGTH (sizeof(ROOT_PREFIX)-1) // GGS67: Allow prefix selection by user code rather than requiring to redefine in header
 #define __ROOT_PATH       ROOT_PREFIX"/"
 #define __REGISTER_PATH   ROOT_PREFIX"/register"
 #define __DELETE_PATH     ROOT_PREFIX"/delete"
@@ -79,6 +80,21 @@
 #define __FEEDBACK_PATH   ROOT_PREFIX"/feedback"
 #define __RESTORE_PATH    ROOT_PREFIX"/restore"
 #define __REBOOT_PATH     ROOT_PREFIX"/reboot"
+
+// GGS67: path selection for prefix config
+#define KNX_WEB_PATH(s) ((const char *)&(s[__withPrefix?0:ROOT_PREFIX_LENGTH]))
+// GGS67: For program space strings F(s) we have to fidel around a bit with types to make prefixing possible
+//   Program space strings wotk by using the PSTR macro which puts the string in a special section which is not loaded in memory
+//   F(s) from WString.h casts this to  __FlashStringHelper dummy class just for making the String constructor aware of
+//   this being a string in flash (this cast is done via FPSTR)
+//
+// PSTR requires the size of teh string thus we cannot pass the conditional index. We fist have to store the complete string 
+// index it and prepare for String. So we have to split up the macro F from WString.h
+//
+// #define F(string_literal) (FPSTR(PSTR(string_literal)))
+//
+// for our web string with or without prefix
+#define F_KNX_WEB_PATH(s) FPSTR((const char *)&(PSTR(s)[__withPrefix?0:ROOT_PREFIX_LENGTH]))
 
 /**
  * Different service types, we are mainly interested in KNX_ST_ROUTING_INDICATION
@@ -256,7 +272,7 @@ typedef struct __cemi_msg
   uint8_t additional_info_len;
   union
   {
-    cemi_addi_t additional_info[];
+    cemi_addi_t additional_info[1]; // GGS67: set dummy length to avoid compilation error on flexible array in union
     cemi_service_t service_information;
   } data;
 } cemi_msg_t;
@@ -361,8 +377,8 @@ class ESPKNXIP {
   public:
     ESPKNXIP();
     void load();
-    void start();
-    void start(ESP8266WebServer *srv);
+    void start(bool withPrefix=false);
+    void start(ESP8266WebServer *srv,bool withPrefix=false);
     void loop();
 
     void save_to_eeprom();
@@ -487,7 +503,7 @@ class ESPKNXIP {
     }
 
   private:
-    void __start();
+    void __start(bool withPrefix);
     void __loop_knx();
 
     // Webserver functions
@@ -523,6 +539,8 @@ class ESPKNXIP {
     address_t physaddr;
     WiFiUDP udp;
 
+    bool __withPrefix; // GGS67: allow config-free user code selection of prefix
+    
     callback_assignment_id_t registered_callback_assignments;
     callback_assignment_t callback_assignments[MAX_CALLBACK_ASSIGNMENTS];
 
